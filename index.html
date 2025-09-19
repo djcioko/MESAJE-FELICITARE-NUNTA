@@ -16,9 +16,9 @@
     height: auto;
     margin-bottom: 20px;
   }
-  #messages {
-    color: #333;
-    margin-top: 20px;
+  #messages p {
+    font-size: 1.5em;
+    margin: 10px 0;
   }
   #inputArea {
     margin-top: 20px;
@@ -38,6 +38,11 @@
     100% { transform: translateY(0); }
   }
 </style>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
 </head>
 <body>
 
@@ -52,18 +57,32 @@
 </div>
 
 <script>
-  // Încarcă mesajele existente din LocalStorage
-  let messages = JSON.parse(localStorage.getItem('messages')) || [];
+  // 🔹 Configurația Firebase reală 🔹
+  const firebaseConfig = {
+    apiKey: "AIzaSyCzbzObPl5-eErZ0DaghYHf3VC1awtuHCs",
+    authDomain: "felicitari-nunta.firebaseapp.com",
+    databaseURL: "https://felicitari-nunta-default-rtdb.firebaseio.com",
+    projectId: "felicitari-nunta",
+    storageBucket: "felicitari-nunta.firebasestorage.app",
+    messagingSenderId: "102925718812",
+    appId: "1:102925718812:web:01f5ec325b8234133216d9",
+    measurementId: "G-Z0HY95L1PH"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
   const messagesDiv = document.getElementById('messages');
 
-  function showMessages() {
+  // Funcție pentru a afișa mesajele
+  function showMessages(snapshot) {
     messagesDiv.innerHTML = '';
-    messages.forEach(msg => {
+    snapshot.forEach(childSnapshot => {
+      const msg = childSnapshot.val().message;
       const p = document.createElement('p');
       p.textContent = msg;
       messagesDiv.appendChild(p);
 
-      // inimioare animate
       const heart = document.createElement('span');
       heart.textContent = '❤️';
       heart.className = 'heart';
@@ -71,16 +90,17 @@
     });
   }
 
+  // Ascultă modificările în Firebase și actualizează live
+  const messagesRef = db.ref('messages');
+  messagesRef.on('value', showMessages);
+
+  // Adaugă mesaj nou în Firebase
   function addMessage() {
     const input = document.getElementById('newMessage');
     if (input.value.trim() === '') return;
-    messages.push(input.value.trim());
-    localStorage.setItem('messages', JSON.stringify(messages));
+    messagesRef.push({ message: input.value.trim() });
     input.value = '';
-    showMessages();
   }
-
-  showMessages();
 </script>
 
 </body>
