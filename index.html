@@ -9,7 +9,7 @@
     <style>
         body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; text-align: center; }
         
-        /* --- DESIGN TELEFON (FORMULAR) --- */
+        /* --- DESIGN TELEFON (FORMULAR INVITATI) --- */
         #form-section { padding: 30px 15px; display: none; }
         .logo { font-size: 24px; font-weight: bold; color: #f1c40f; margin-bottom: 20px; }
         input, textarea { 
@@ -18,64 +18,65 @@
             box-sizing: border-box;
         }
         button { 
-            background: #f1c40f; color: #000; padding: 15px 40px; border: none; 
+            background: #f1c40f; color: #000; padding: 18px; border: none; 
             border-radius: 12px; font-weight: bold; font-size: 18px; cursor: pointer; width: 100%; max-width: 400px;
+            transition: 0.3s;
         }
-        /* Mesajul de confirmare (Cloud) */
-        #success-msg { display: none; color: #2ed573; font-weight: bold; margin-top: 20px; animation: fadeIn 0.5s; }
+        /* Confirmare Cloud */
+        #success-msg { display: none; background: #1e3a1e; border: 1px solid #2ed573; padding: 15px; border-radius: 12px; margin-top: 20px; animation: fadeIn 0.5s; }
 
         /* --- DESIGN TV (AFISARE GIGANT) --- */
-        #tv-section { height: 100vh; display: none; flex-direction: column; justify-content: center; overflow: hidden; padding: 0 40px; }
-        .wedding-card { border: 8px solid #f1c40f; padding: 60px; border-radius: 40px; background: rgba(255,255,255,0.03); animation: zoomIn 1s ease-out; }
-        .author { font-size: 50px; color: #f1c40f; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 2px; }
-        .text { font-size: 85px; font-style: italic; line-height: 1.1; color: #fff; }
+        #tv-section { height: 100vh; display: none; flex-direction: column; justify-content: center; padding: 0 50px; }
+        .wedding-card { border: 6px solid #f1c40f; padding: 60px; border-radius: 40px; background: rgba(255,255,255,0.02); animation: zoomIn 1s; }
+        .author { font-size: 45px; color: #f1c40f; text-transform: uppercase; margin-bottom: 15px; }
+        .text { font-size: 75px; font-style: italic; line-height: 1.2; color: #fff; }
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
 
     <div id="form-section">
-        <div class="logo">💍 FELICITĂRI LIVE</div>
-        <h1 style="font-size: 22px;">Trimite un mesaj mirilor!</h1>
-        <p style="color: #888;">Urarea ta va apărea pe ecranul mare.</p>
+        <div class="logo">💍 FELICITĂRI NUNTĂ</div>
+        <h1>Lăsați un mesaj mirilor</h1>
+        <p style="color: #aaa;">Urarea voastră va apărea live pe televizor!</p>
         
         <input type="text" id="nume" placeholder="Numele tău...">
-        <textarea id="mesaj" rows="4" placeholder="Scrie ceva frumos aici..."></textarea>
+        <textarea id="mesaj" rows="4" placeholder="Scrie mesajul tău aici..."></textarea>
         <br>
         <button id="btnTrimite" onclick="trimiteMesaj()">TRIMITE ÎN CLOUD ☁️</button>
         
         <div id="success-msg">
-            <p>✅ Mesajul tău a plecat în Cloud!</p>
-            <p>Uită-te la televizor peste câteva secunde.</p>
+            <p style="color: #2ed573; font-weight: bold; margin: 0;">✅ MESAJ SALVAT ÎN CLOUD!</p>
+            <p style="font-size: 14px; margin: 5px 0 0 0;">Acesta va apărea pe ecran în câteva secunde.</p>
         </div>
     </div>
 
     <div id="tv-section">
-        <h1 style="font-size: 45px; margin-bottom: 30px;">CASĂ DE PIATRĂ! ✨</h1>
+        <h1 style="font-size: 40px; margin-bottom: 30px;">CASĂ DE PIATRĂ! ✨</h1>
         <div id="display-content">
              <div class="wedding-card">
-                <p class="author">Sistem</p>
+                <p class="author">SISTEM</p>
                 <p class="text">Așteptăm urările invitaților...</p>
              </div>
         </div>
     </div>
 
     <script>
-        // Configurația ta Firebase
+        // Configurația ta din poze
         const firebaseConfig = { databaseURL: "https://felicitari-nunta-default-rtdb.firebaseio.com" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Detectăm dacă e Telefon (< 800px) sau TV
+        // Switch automat intre Telefon si TV
         if(window.innerWidth < 800) {
             document.getElementById('form-section').style.display = 'block';
         } else {
             document.getElementById('tv-section').style.display = 'flex';
         }
 
-        // LOGICA TRIMITE (Pentru Telefon)
+        // Functia de trimitere (Telefon)
         function trimiteMesaj() {
             const author = document.getElementById('nume').value;
             const text = document.getElementById('mesaj').value;
@@ -84,59 +85,36 @@
 
             if(author && text) {
                 btn.disabled = true;
-                btn.style.opacity = "0.5";
                 btn.innerText = "Se trimite...";
-
-                db.ref('messages').push({ 
-                    author, 
-                    text, 
-                    timestamp: new Date().toLocaleString() 
-                }).then(() => {
+                
+                db.ref('messages').push({ author, text, timestamp: new Date().toLocaleString() })
+                .then(() => {
                     success.style.display = 'block';
                     document.getElementById('mesaj').value = '';
-                    setTimeout(() => { 
-                        success.style.display = 'none'; 
-                        btn.disabled = false;
-                        btn.style.opacity = "1";
-                        btn.innerText = "TRIMITE ALT MESAJ";
-                    }, 5000);
+                    btn.innerText = "TRIMITE ALT MESAJ";
+                    btn.disabled = false;
+                    setTimeout(() => { success.style.display = 'none'; }, 6000);
                 });
-            } else {
-                alert("Te rugăm să scrii numele și mesajul!");
-            }
+            } else { alert("Te rugăm să completezi ambele câmpuri!"); }
         }
 
-        // LOGICA AFISARE (Pentru TV)
-        let mesajeSalvate = [];
-        let indexCurent = 0;
-
+        // Logica de afisare (TV)
+        let index = 0;
         db.ref('messages').on('value', (snap) => {
             const data = snap.val();
-            if(data) {
-                mesajeSalvate = Object.values(data);
-                if(window.innerWidth >= 800) { afiseazaPeTV(); }
+            if(data && window.innerWidth >= 800) {
+                const lista = Object.values(data);
+                setInterval(() => {
+                    const msg = lista[index % lista.length];
+                    document.getElementById('display-content').innerHTML = `
+                        <div class="wedding-card">
+                            <p class="author">${msg.author}</p>
+                            <p class="text">"${msg.text || msg.message}"</p>
+                        </div>`;
+                    index++;
+                }, 8000);
             }
         });
-
-        function afiseazaPeTV() {
-            if(mesajeSalvate.length === 0) return;
-            const msg = mesajeSalvate[indexCurent];
-            const content = document.getElementById('display-content');
-            
-            content.innerHTML = `
-                <div class="wedding-card">
-                    <p class="author">${msg.author}</p>
-                    <p class="text">"${msg.text || msg.message}"</p>
-                </div>
-            `;
-            
-            // Schimbă mesajul la fiecare 10 secunde
-            indexCurent = (indexCurent + 1) % mesajeSalvate.length;
-        }
-
-        if(window.innerWidth >= 800) {
-            setInterval(afiseazaPeTV, 10000);
-        }
     </script>
 </body>
 </html>
